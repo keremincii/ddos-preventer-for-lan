@@ -8,6 +8,8 @@ sudo systemctl daemon-reload                    # Reloads systemd configuration
 
 sudo journalctl -u ddos-preventer -f            # Shows live service logs
 
+watch -n 1 cat /home/log/resource.log           # Shows live Resource consumption
+
 # Log file location
 /home/log/dddos-preventer.log
 
