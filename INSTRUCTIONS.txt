@@ -1,1 +1,31 @@
-404: Not Found
+/etc/systemd/system/ddos-preventer.service servis dosyası tarafından başlatılıyor. reboot atılınca tekrar çalışması kapalı modda.
+
+sudo systemctl start ddos-preventer.service ile başlar 
+
+sudo systemctl stop ddos-preventer.service ile durur
+
+sudo systemctl daemon-reload ile reload atılır
+
+journalctl -u ddos-preventer -o cat -f  ile anlık loglar izlenebilir
+
+ 
+
+{}{}log dosyası{}{}--
+
+/home/log/ddos-preventer.log
+
+ 
+
+-----whitelisti görmek için—————
+
+sudo ipset list ddos_whitelist
+
+--{}{}whitelist konumu{}{-} buraya ip eklenip çıkarılabiliyor
+
+/etc/ddos_preventer/whitelist.txt
+
+ 
+
+—blocklistteki ipleri görmek için—
+
+sudo ipset list ddos_blocklist
