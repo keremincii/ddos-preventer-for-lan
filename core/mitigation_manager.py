@@ -5,6 +5,8 @@ import logging
 from collections import deque
 from pathlib import Path
 import os
+import subprocess
+import ipaddress
 import config
 from . import ipset_manager
 
@@ -52,6 +54,49 @@ class MitigationManager:
         if not cls._instance:
             cls._instance = super(MitigationManager, cls).__new__(cls, *args, **kwargs)
         return cls._instance
+    
+    def _auto_interface_whitelist(self):
+        # 0–9 arası hariç tutulacak prefixler
+        skip = {f"eth{i}" for i in range(10)}
+
+        result = subprocess.run(["ip", "-4", "addr", "show"],
+                                capture_output=True, text=True)
+
+        if result.returncode != 0:
+            return
+
+        current_iface = None
+
+        for line in result.stdout.splitlines():
+            line = line.strip()
+
+            # Yeni interface satırı (ör: "2: ens18: <BROADCAST,...>")
+            if ":" in line and not line.startswith("inet"):
+                current_iface = line.split(":")[1].strip()
+                continue
+
+            # IPv4 satırı mı?
+            if line.startswith("inet ") and current_iface:
+                # eth0–eth9 ise SKIP
+                if current_iface in skip:
+                    continue
+
+                cidr = line.split()[1]  # ör: "10.8.0.2/24"
+                try:
+                    net = ipaddress.ip_network(cidr, strict=False)
+                except:
+                    continue
+
+                # Tüm host IP'lerini whitelist’e ekle
+                cidr_str = str(net)
+                if cidr_str in self.whitelist:
+                    continue
+                self.whitelist.add(cidr_str)
+                ipset_manager.add_whitelist(cidr_str)
+
+                with open(WHITELIST_FILE, "a") as f:
+                    f.write(cidr_str + "\n")
+
 
     def __init__(self):
         if hasattr(self, '_initialized'):
@@ -68,6 +113,7 @@ class MitigationManager:
 
         self.whitelist = set()
         self._load_whitelist()
+        self._auto_interface_whitelist()
 
         self.metrics = {"total": 0, "allowed": 0, "blocked": 0, "blacklisted": 0}
 
@@ -97,6 +143,7 @@ class MitigationManager:
                     ip = line.strip()
                     if ip and not ip.startswith("#"):
                         self.whitelist.add(ip)
+                        ipset_manager.add_whitelist(ip)
             logger.info(f"Whitelist yüklendi ({len(self.whitelist)} IP).")
         except Exception as e:
             logger.error(f"Whitelist okunamadı: {e}")

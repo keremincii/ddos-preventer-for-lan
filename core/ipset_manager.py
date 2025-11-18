@@ -2,6 +2,8 @@ import subprocess
 import logging
 import config
 
+WHITELIST_SET = "ddos_whitelist"
+
 logger = logging.getLogger("ddos-preventer")
 
 def _run_shell(cmd, check=True):
@@ -28,6 +30,7 @@ def _run_shell(cmd, check=True):
 
 def setup():
     """Engellenen IP'leri tutmak için bir ipset listesi oluşturur."""
+    _run_shell(["ipset", "create", WHITELIST_SET, "hash:net", "timeout", "0", "-exist"])
     set_name = config.DEFAULT_IPSET_NAME
     logger.info(f"'{set_name}' adında ipset listesi oluşturuluyor...")
     if not _run_shell(["ipset", "create", set_name, "hash:ip", "timeout", "0"]):
@@ -35,6 +38,9 @@ def setup():
         return False
     logger.info("ipset listesi hazır.")
     return True
+
+def add_whitelist(ip: str):
+    _run_shell(["ipset", "add", WHITELIST_SET, ip, "-exist"])
 
 def add(ip: str, timeout: int):
     """Bir IP adresini belirtilen süreyle (saniye) ipset listesine ekler."""
@@ -53,8 +59,11 @@ def contains(ip: str) -> bool:
     return result is not None and result.returncode == 0
 
 def cleanup():
-    """Oluşturulan ipset listesini siler."""
+    # Whitelist setini sil
+    _run_shell(["ipset", "destroy", WHITELIST_SET])
+
+    # Blocklist setini sil
     set_name = config.DEFAULT_IPSET_NAME
-    logger.info(f"'{set_name}' ipset listesi temizleniyor...")
     _run_shell(["ipset", "destroy", set_name])
-    logger.info("ipset listesi temizlendi.")
+
+    logger.info("ipset listeleri temizlendi.")
