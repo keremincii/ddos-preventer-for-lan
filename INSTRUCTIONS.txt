@@ -7,7 +7,7 @@ sudo systemctl stop ddos-preventer.service ile durur
 sudo systemctl daemon-reload ile reload atılır
 
 journalctl -u ddos-preventer -o cat -f  ile anlık loglar izlenebilir
-
+watch -n 0.5 "iptables -nvL DDOS_FILTER"
  
 
 {}{}log dosyası{}{}--
