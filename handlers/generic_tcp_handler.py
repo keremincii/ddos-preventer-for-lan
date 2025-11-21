@@ -23,7 +23,7 @@ async def get_original_destination(writer):
 async def bridge_streams(reader1, writer1, reader2, writer2):
     try:
         while not reader1.at_eof() and not reader2.at_eof():
-            data = await asyncio.wait_for(reader1.read(4096), timeout=300)
+            data = await asyncio.wait_for(reader1.read(4096), timeout=1200)
             if not data: break
             writer2.write(data)
             await writer2.drain()
