@@ -1,0 +1,17 @@
+[Unit]
+Description=DDoS Preventer Service
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/python3 /opt/deneme2/main.py
+ExecStopPost=/opt/deneme2/cleanup_rules.sh
+Restart=no
+User=root
+KillSignal=SIGTERM
+TimeoutStopSec=20
+KillMode=control-group
+ExecReload=/bin/kill -HUP $MAINPID
+
+[Install]
+WantedBy=multi-user.target
