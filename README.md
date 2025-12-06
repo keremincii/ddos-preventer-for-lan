@@ -1,67 +1,153 @@
 DDoS Preventer for LAN
-This project is a lightweight iptables + ipset + asyncio-based transparent proxy that protects Linux servers against DDoS attacks on LAN/WAN environments.
-Highlights
-Captures inbound TCP traffic with iptables NAT and forwards it to local proxies
-aiohttp-based HTTP reverse proxy for HTTP services
-Generic TCP proxy for all other TCP services
-Per-IP rate limit, burst limit, and concurrent connection limit
-Offending IPs are added to an ipset blocklist
-Kernel hardening:
+
+A lightweight iptables + ipset + asyncio-based transparent proxy that protects Linux servers against DDoS attacks in LAN/WAN environments.
+
+⭐ Features
+
+Captures inbound TCP traffic using iptables NAT
+
+aiohttp-based HTTP reverse proxy
+
+Generic TCP proxy for all other services
+
+Per-IP rate limit, burst limit, concurrent connection limit
+
+Offending IPs added to an ipset blocklist
+
+Kernel hardening features:
+
 SYN cookies
+
 Enlarged conntrack table
-UDP flood rate limit
+
+UDP flood rate limiting
+
 SYN flood protection
-Token-bucket limiter for minimal overhead
+
+Low-overhead token-bucket limiter
+
 Auto port discovery via ss -lnt
-/etc/ddos_preventer/whitelist.txt for trusted IPs/CIDRs
-Requirements
+
+Whitelist file: /etc/ddos_preventer/whitelist.txt
+
+📦 Requirements
+
 Linux with iptables + ipset support
-Root privileges (must run with sudo)
-System packages: iptables, ipset, iproute2, procps
-Python 3.9+
-Python deps: aiohttp (install via pip install -r requirements.txt)
-Architecture Overview
-main.py: startup, signal handling, launches HTTP & TCP proxies, applies/cleans iptables & ipset rules
-config.py: kernel parameters, default limits, per-port overrides, proxy listeners, log path
-core/ipset_manager.py: manages ddos_blocklist and ddos_whitelist sets
-core/iptables_manager.py: NAT DDOS_GATEWAY chain, redirects protected ports to proxies
-core/iptables_hardening.py: kernel-level DDOS_FILTER chain, SYN/UDP defense, sysctl tunings
-core/mitigation_manager.py: token-bucket rate limiting, connection counting, whitelist loading
-handlers/http_handler.py: reverse proxy with SO_ORIGINAL_DST, applies limits, forwards headers
-handlers/generic_tcp_handler.py: transparent TCP bridge with rate/connection limits
-Configuration (config.py)
-Default limits:
-DEFAULT_RATE = 20         # requests per secondDEFAULT_BURST = 50        # short burst allowanceDEFAULT_CONN_LIMIT = 100  # parallel connections per IPDEFAULT_BLOCK_SEC = 30    # seconds in blocklist
-Per-port overrides:
-TARGET_PORTS = {    22: {'protocol': 'tcp', 'rate': 5,  'burst': 10,  'conn_limit': 10},    80: {'protocol': 'http', 'rate': 15, 'burst': 25},    443: {'protocol': 'tcp', 'rate': 100, 'burst': 200}}
-protocol: http routes via HTTP proxy, tcp uses generic TCP proxy
-Ports not listed can still be auto-discovered and protected with default limits
-Running Manually
+
+Root privileges
+
+Packages: iptables, ipset, iproute2, procps
+
+Python ≥ 3.9
+
+Dependencies:
+
+pip install -r requirements.txt
+
+🏗 Architecture Overview
+main.py                     → startup, signal handling, launches HTTP/TCP proxies, applies/cleans iptables & ipset
+config.py                   → kernel params, default limits, per-port overrides, listeners, log paths
+core/ipset_manager.py       → manages ddos_blocklist & ddos_whitelist
+core/iptables_manager.py    → NAT DDOS_GATEWAY chain, redirection logic
+core/iptables_hardening.py  → DDOS_FILTER chain, SYN/UDP defense, sysctl tuning
+core/mitigation_manager.py  → token-bucket limiter, connection counting, whitelist loading
+handlers/http_handler.py    → HTTP reverse proxy with SO_ORIGINAL_DST + rate limits
+handlers/generic_tcp_handler.py → transparent TCP proxy with rate/connection limits
+
+⚙️ Configuration (config.py)
+Default Limits
+Parameter	Description
+DEFAULT_RATE = 20	Requests per second
+DEFAULT_BURST = 50	Short burst allowance
+DEFAULT_CONN_LIMIT = 100	Parallel connections per IP
+DEFAULT_BLOCK_SEC = 30	Blocklist duration in seconds
+Per-Port Overrides
+TARGET_PORTS = {
+    22:  {'protocol': 'tcp',  'rate': 5,  'burst': 10,  'conn_limit': 10},
+    80:  {'protocol': 'http', 'rate': 15, 'burst': 25},
+    443: {'protocol': 'tcp',  'rate': 100, 'burst': 200}
+}
+
+
+protocol=http → handled by HTTP proxy
+
+protocol=tcp → handled by generic TCP proxy
+
+Ports not listed are auto-discovered and protected with default limits.
+
+▶️ Running Manually
 sudo python3 main.py
+
+
 Startup sequence:
-Applies sysctl (SYN cookies, conntrack max)
-Creates ipset blocklist/whitelist
-Adds iptables NAT/filter rules
-Auto-discovers open TCP ports
-HTTP proxy listening on 0.0.0.0:8081
-Generic TCP proxy on 0.0.0.0:9000
-Ctrl+C stops the proxies and cleans iptables/ipset state.
-Systemd Service
-Ship a unit file (example ddos-preventer.service):
-sudo cp ddos-preventer.service /etc/systemd/system/sudo systemctl daemon-reloadsudo systemctl enable ddos-preventersudo systemctl start ddos-preventersudo systemctl status ddos-preventer
-Stop with sudo systemctl stop ddos-preventer.
-Whitelist
-File: /etc/ddos_preventer/whitelist.txt
-# ddos-preventer whitelist# one IP or CIDR per line# 192.168.1.10# 10.0.0.0/24# 2001:db8::/32
-Each entry is automatically added to the ddos_whitelist ipset set
-Whitelisted addresses bypass rate/connection limits and blocklisting
-Logging
-Default log path: /home/log/ddos-preventer.log (change in config.py if needed).
-Security Notes
-Must run as root due to iptables/ipset/sysctl usage
-Test in staging before production; the tool inserts NAT and INPUT rules
-Tune UDP and SYN limits if you handle high legitimate traffic
-Contributing
-Open issues or pull requests for bugs or enhancements. Follow existing coding style and logging conventions.
-License
-Add your preferred license file (e.g., MIT, Apache 2.0, GPL) to the repository and reference it here.
+
+Apply sysctl hardening (SYN cookies, conntrack max)
+
+Create ipset blocklist/whitelist
+
+Add iptables NAT + filter rules
+
+Auto-discover open TCP ports
+
+Start HTTP proxy on 0.0.0.0:8081
+
+Start generic TCP proxy on 0.0.0.0:9000
+
+Stop with: Ctrl + C
+
+🛠 Systemd Service
+
+Install the unit file:
+
+sudo cp ddos-preventer.service /etc/systemd/system/
+sudo systemctl daemon-reload
+sudo systemctl enable ddos-preventer
+sudo systemctl start ddos-preventer
+sudo systemctl status ddos-preventer
+
+
+Stop:
+
+sudo systemctl stop ddos-preventer
+
+🤝 Whitelist
+
+Path: /etc/ddos_preventer/whitelist.txt
+
+# one IP or CIDR per line
+192.168.1.10
+10.0.0.0/24
+2001:db8::/32
+
+
+Entries are automatically added to the ddos_whitelist ipset
+
+Whitelisted IPs bypass rate/connection limits and blocklisting
+
+📜 Logging
+
+Default log file:
+
+/home/log/ddos-preventer.log
+
+
+You may change this in config.py.
+
+🔐 Security Notes
+
+Must run as root
+
+Test in staging before production
+
+The tool inserts NAT and INPUT rules
+
+Tune UDP/SYN limits if you expect large legitimate traffic
+
+👨‍💻 Contributing
+
+Open issues or pull requests.
+Follow the existing coding style and logging conventions.
+
+📄 License
+
+Add a license file (MIT, Apache 2.0, GPL, etc.) and reference it here.
