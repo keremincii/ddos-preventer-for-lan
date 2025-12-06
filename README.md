@@ -1,4 +1,4 @@
-DDoS Preventer for LAN
+# DDoS Preventer for LAN
 
 A lightweight iptables + ipset + asyncio-based transparent proxy that protects Linux servers against DDoS attacks in LAN/WAN environments.
 
@@ -30,7 +30,7 @@ Auto port discovery via ss -lnt
 
 Whitelist file: /etc/ddos_preventer/whitelist.txt
 
-📦 Requirements
+##### 📦 Requirements
 
 Linux with iptables + ipset support
 
@@ -44,7 +44,7 @@ Dependencies:
 ```bash
 pip install -r requirements.txt
 ```
-▶️ Running Manually
+##### ▶️ Running Manually
 ```bash
 sudo python3 main.py
 ```
@@ -67,7 +67,7 @@ Stop with:
 ```bash
 Ctrl + C
 ```
-🏗 Architecture Overview
+##### 🏗 Architecture Overview
 main.py                     → startup, signal handling, launches HTTP/TCP proxies, applies/cleans iptables & ipset
 config.py                   → kernel params, default limits, per-port overrides, listeners, log paths
 core/ipset_manager.py       → manages ddos_blocklist & ddos_whitelist
@@ -77,7 +77,7 @@ core/mitigation_manager.py  → token-bucket limiter, connection counting, white
 handlers/http_handler.py    → HTTP reverse proxy with SO_ORIGINAL_DST + rate limits
 handlers/generic_tcp_handler.py → transparent TCP proxy with rate/connection limits
 
-⚙️ Configuration (config.py)
+##### ⚙️ Configuration (config.py)
 Default Limits
 Parameter	Description
 DEFAULT_RATE = 20	Requests per second
@@ -99,7 +99,7 @@ protocol=tcp → handled by generic TCP proxy
 Ports not listed are auto-discovered and protected with default limits.
 
 
-🛠 Systemd Service
+##### 🛠 Systemd Service
 
 Install the unit file:
 ```bash
@@ -114,9 +114,9 @@ Stop:
 ```bash
 sudo systemctl stop ddos-preventer
 ```
-🤝 Whitelist
+##### 🤝 Whitelist
 
-# Path: /etc/ddos_preventer/whitelist.txt
+###### Path: /etc/ddos_preventer/whitelist.txt
 
 one IP or CIDR per line
 
@@ -131,16 +131,16 @@ Entries are automatically added to the ddos_whitelist ipset
 
 Whitelisted IPs bypass rate/connection limits and blocklisting
 
-📜 Logging
+##### 📜 Logging
 
 Default log file:
-
+```bash
 /home/log/ddos-preventer.log
-
+```
 
 You may change this in config.py.
 
-🔐 Security Notes
+##### 🔐 Security Notes
 
 Must run as root
 
@@ -150,7 +150,7 @@ The tool inserts NAT and INPUT rules
 
 Tune UDP/SYN limits if you expect large legitimate traffic
 
-👨‍💻 Contributing
+##### 👨‍💻 Contributing
 
 Open issues or pull requests.
 Follow the existing coding style and logging conventions.
