@@ -137,7 +137,7 @@ Path:
 /etc/ddos_preventer/whitelist.txt
 ```
 one IP or CIDR per line
-
+##### EXAMPLE
 192.168.1.10
 
 10.0.0.0/24
