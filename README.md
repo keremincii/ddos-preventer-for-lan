@@ -78,25 +78,32 @@ handlers/http_handler.py    → HTTP reverse proxy with SO_ORIGINAL_DST + rate l
 handlers/generic_tcp_handler.py → transparent TCP proxy with rate/connection limits
 
 ##### ⚙️ Configuration (config.py)
-Default Limits
-Parameter	Description
-DEFAULT_RATE = 20	Requests per second
-DEFAULT_BURST = 50	Short burst allowance
-DEFAULT_CONN_LIMIT = 100	Parallel connections per IP
-DEFAULT_BLOCK_SEC = 30	Blocklist duration in seconds
-Per-Port Overrides
+
+##### Default Limits
+
+| Parameter          | Description                    |
+|--------------------|--------------------------------|
+| DEFAULT_RATE       | 20 Requests per second         |
+| DEFAULT_BURST      | 50 Short burst allowance       |
+| DEFAULT_CONN_LIMIT | 100 Parallel connections per IP|
+| DEFAULT_BLOCK_SEC  | 30 Blocklist duration (seconds)|
+
+
+##### Per-Port Overrides
+
+```python
 TARGET_PORTS = {
-    22:  {'protocol': 'tcp',  'rate': 5,  'burst': 10,  'conn_limit': 10},
+    22:  {'protocol': 'tcp',  'rate': 5,  'burst': 10, 'conn_limit': 10},
     80:  {'protocol': 'http', 'rate': 15, 'burst': 25},
     443: {'protocol': 'tcp',  'rate': 100, 'burst': 200}
 }
+```
 
-
-protocol=http → handled by HTTP proxy
-
-protocol=tcp → handled by generic TCP proxy
+protocol=http → handled by HTTP proxy  
+protocol=tcp → handled by generic TCP proxy  
 
 Ports not listed are auto-discovered and protected with default limits.
+
 
 
 ##### 🛠 Systemd Service
