@@ -119,8 +119,11 @@ sudo systemctl stop ddos-preventer
 Path: /etc/ddos_preventer/whitelist.txt
 
 # one IP or CIDR per line
+
 192.168.1.10
+
 10.0.0.0/24
+
 2001:db8::/32
 
 
