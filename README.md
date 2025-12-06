@@ -165,7 +165,3 @@ Tune UDP/SYN limits if you expect large legitimate traffic
 
 Open issues or pull requests.
 Follow the existing coding style and logging conventions.
-
-📄 License
-
-Add a license file (MIT, Apache 2.0, GPL, etc.) and reference it here.
