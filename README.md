@@ -32,7 +32,7 @@ Auto port discovery via ss -lnt
 
 Follow this step to set up the project.
 
-1. Clone the repository
+##### Clone the repository
 ```bash
 git clone https://github.com/keremincii/ddos-preventer.git
 cd ddos-preventer
