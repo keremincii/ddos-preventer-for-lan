@@ -5,6 +5,32 @@
 
 Its main purpose is to capture incoming traffic to the server via iptables, pass it through a Python-based proxy, and automatically block IP addresses that exceed specified rate limits and connection limits using `ipset`.
 
+## 📊 Traffic Flow Diagram
+
+A simplified view of how incoming traffic is processed by the kernel and the proxy before reaching your services.
+
+Incoming Traffic (TCP/UDP)
+             ⬇
++----------------------------------------+
+|             LINUX KERNEL               |
+|  1. [ipset Blocklist Check]  ==========|===> ⛔ DROP (Banned IPs)
+|  2. [SYN & UDP Flood Limits] ==========|===> ⛔ DROP (Malicious Floods)
+|  3. [iptables NAT Redirect]            |
++----------------+-----------------------+
+                 |
+                 |
+                 |
+                 |(Clean TCP Traffic)
+                 ⬇
++--------------------------------+                         +----------------------+
+|         PYTHON PROXY           |    (Clean TCP Traffic)  |    REAL SERVICES     |
+|  (Asyncio Listener)            |======================>  |  SSH (Port 22)       |
+|  [App Layer Rate Limits]       |                         |  HTTP (Port 80)      |
+|                                |                         |  App (Port 443)      |
+|  IF LIMIT EXCEEDED:            |                         +----------------------+
+|   -> Add IP to ipset (Ban)     |
+|   -> ⛔ DROP SESSION           |
++--------------------------------+
 ---
 
 ## ⭐ Features
@@ -160,3 +186,4 @@ Contributions, issues, and feature requests are welcome! Feel free to check the 
 
 ## 📜 License
 This project is licensed under the MIT License.
+
