@@ -5,32 +5,42 @@
 
 Its main purpose is to capture incoming traffic to the server via iptables, pass it through a Python-based proxy, and automatically block IP addresses that exceed specified rate limits and connection limits using `ipset`.
 
-## 📊 Traffic Flow Diagram
+graph TD
+    Input[Incoming Traffic TCP/UDP] --> Kernel
+    
+    subgraph Linux_Kernel [🐧 LINUX KERNEL]
+        style Linux_Kernel fill:#f9f9f9,stroke:#333
+        Blocklist{Is IP Banned?}
+        FloodProt{SYN/UDP Flood?}
+        NAT[iptables NAT Redirection]
+    end
 
-A simplified view of how incoming traffic is processed by the kernel and the proxy before reaching your services.
+    subgraph User_Space [🐍 PYTHON PROXY]
+        style User_Space fill:#e6f7ff,stroke:#1890ff
+        ProxyList[Asyncio Listener]
+        RateLimit{Rate Limit Check}
+        Mitigation[Ban IP & Drop]
+    end
 
-Incoming Traffic (TCP/UDP)
-             ⬇
-+----------------------------------------+
-|             LINUX KERNEL               |
-|  1. [ipset Blocklist Check]  ==========|===> ⛔ DROP (Banned IPs)
-|  2. [SYN & UDP Flood Limits] ==========|===> ⛔ DROP (Malicious Floods)
-|  3. [iptables NAT Redirect]            |
-+----------------+-----------------------+
-                 |
-                 |
-                 |
-                 |(Clean TCP Traffic)
-                 ⬇
-+--------------------------------+                         +----------------------+
-|         PYTHON PROXY           |    (Clean TCP Traffic)  |    REAL SERVICES     |
-|  (Asyncio Listener)            |======================>  |  SSH (Port 22)       |
-|  [App Layer Rate Limits]       |                         |  HTTP (Port 80)      |
-|                                |                         |  App (Port 443)      |
-|  IF LIMIT EXCEEDED:            |                         +----------------------+
-|   -> Add IP to ipset (Ban)     |
-|   -> ⛔ DROP SESSION           |
-+--------------------------------+
+    subgraph Services [Real Services]
+        style Services fill:#e6ffec,stroke:#52c41a
+        SSH[SSH]
+        HTTP[HTTP]
+    end
+
+    %% Akış Mantığı
+    Kernel --> Blocklist
+    Blocklist -- Yes --> Drop1[⛔ DROP Packet]
+    Blocklist -- No --> FloodProt
+    
+    FloodProt -- Yes --> Drop2[⛔ DROP Flood]
+    FloodProt -- No --> NAT
+    
+    NAT --> ProxyList
+    ProxyList --> RateLimit
+    
+    RateLimit -- Good --> SSH & HTTP
+    RateLimit -- Bad --> Mitigation
 ---
 
 ## ⭐ Features
@@ -186,4 +196,5 @@ Contributions, issues, and feature requests are welcome! Feel free to check the 
 
 ## 📜 License
 This project is licensed under the MIT License.
+
 
