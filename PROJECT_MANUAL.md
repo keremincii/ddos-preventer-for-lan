@@ -13,20 +13,20 @@ graph TD
         style Linux_Kernel fill:#f9f9f9,stroke:#333,color:#000
         Blocklist{Is IP Banned?}
         FloodProt{SYN/UDP Flood?}
-        NAT[iptables NAT Redirection]
+        NAT[iptables NAT Redirection<br/>To Proxy Port: 8081/9000]
     end
 
     subgraph User_Space [APP LEVEL PYTHON PROXY]
         style User_Space fill:#e6f7ff,stroke:#1890ff,color:#000
-        ProxyList[Transparent Proxy Listener]
+        ProxyList[Transparent Proxy Listener<br/>Listening on Proxy Port]
         RateLimit{Rate Limit Check}
         Mitigation[Ban IP & Drop]
     end
 
     subgraph Services [Real Services]
         style Services fill:#e6ffec,stroke:#52c41a
-        SSH[SSH]
-        HTTP[HTTP]
+        SSH[SSH - Port 22]
+        HTTP[HTTP - Port 80]
     end
 
     %% Akış Mantığı
@@ -37,7 +37,9 @@ graph TD
     FloodProt -- Yes --> Drop2[⛔ DROP Flood]
     FloodProt -- No --> NAT
     
-    NAT --> ProxyList
+    %% Buradaki geçiş port yönlendirmesini vurgular
+    NAT -- "Redirect to Internal Port" --> ProxyList
+    
     ProxyList --> RateLimit
     
     RateLimit -- Good --> SSH & HTTP
@@ -198,6 +200,7 @@ Contributions, issues, and feature requests are welcome! Feel free to check the 
 
 ## 📜 License
 This project is licensed under the MIT License.
+
 
 
 
