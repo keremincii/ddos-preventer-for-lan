@@ -10,14 +10,14 @@ graph TD
     Input[Incoming Traffic TCP/UDP] --> Kernel
     
     subgraph Linux_Kernel [🐧 LINUX KERNEL]
-        style Linux_Kernel fill:#f9f9f9,stroke:#333
+        style Linux_Kernel fill:#f9f9f9,stroke:#333,color:#000
         Blocklist{Is IP Banned?}
         FloodProt{SYN/UDP Flood?}
         NAT[iptables NAT Redirection]
     end
 
     subgraph User_Space [🐍 PYTHON PROXY]
-        style User_Space fill:#e6f7ff,stroke:#1890ff
+        style User_Space fill:#e6f7ff,stroke:#1890ff,color:#000
         ProxyList[Asyncio Listener]
         RateLimit{Rate Limit Check}
         Mitigation[Ban IP & Drop]
@@ -198,6 +198,7 @@ Contributions, issues, and feature requests are welcome! Feel free to check the 
 
 ## 📜 License
 This project is licensed under the MIT License.
+
 
 
 
