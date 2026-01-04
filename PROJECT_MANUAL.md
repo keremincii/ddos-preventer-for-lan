@@ -16,7 +16,7 @@ graph TD
         NAT[iptables NAT Redirection]
     end
 
-    subgraph User_Space [🐍APPLICATION LEVEL PYTHON PROXY]
+    subgraph User_Space [🐍APP LEVEL PYTHON PROXY]
         style User_Space fill:#e6f7ff,stroke:#1890ff,color:#000
         ProxyList[Asyncio Listener]
         RateLimit{Rate Limit Check}
@@ -198,6 +198,7 @@ Contributions, issues, and feature requests are welcome! Feel free to check the 
 
 ## 📜 License
 This project is licensed under the MIT License.
+
 
 
 
