@@ -154,3 +154,9 @@ IPs caught by the rate limiter are added to `ddos_blocklist`.
 1. **Root Access**: This tool inserts kernel-level rules, so it must run as root.
 2. **Staging vs Production**: Always test configuration changes in a staging environment. Incorrect limits can block legitimate users.
 3. **UDP/SYN Tuning**: If running a UDP-heavy service (like DNS or VoIP), carefully tune `UDP_LIMIT_RATE` in config.py to avoid packet drops.
+
+## 🤝 Contributing
+Contributions, issues, and feature requests are welcome! Feel free to check the issues page.
+
+## 📜 License
+This project is licensed under the MIT License.
